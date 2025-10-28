@@ -1,0 +1,25 @@
+{
+    order rate_limit before basicauth
+}
+
+test.tusk.sh {
+    # Strict rate limiting: 60 requests per minute per IP
+    rate_limit {
+        zone dynamic_zone {
+            key {remote_host}
+            events 60
+            window 1m
+        }
+    }
+    
+    # Additional hourly limit as second line of defense
+    rate_limit {
+        zone hourly_zone {
+            key {remote_host}
+            events 500
+            window 1h
+        }
+    }
+
+    respond "lol"
+}
