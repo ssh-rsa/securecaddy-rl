@@ -1,6 +1,6 @@
 services:
   caddy:
-    image: ghcr.io/ssh-rsa/caddy-ratelimit:latest
+    image: ghcr.io/ssh-rsa/securecady-rl:latest
     ports:
       - "80:80"
       - "443:443"
