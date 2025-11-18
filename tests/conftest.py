@@ -5,6 +5,14 @@ import pytest
 import docker
 import time
 import os
+from pathlib import Path
+
+
+@pytest.fixture(scope="session")
+def project_root():
+    """Return the project root directory."""
+    # Get the directory containing the tests directory
+    return Path(__file__).parent.parent.absolute()
 
 
 @pytest.fixture(scope="session")
@@ -20,13 +28,14 @@ def image_name():
 
 
 @pytest.fixture(scope="session")
-def build_image(docker_client, image_name):
+def build_image(docker_client, image_name, project_root):
     """Build the Docker image before running tests."""
     print(f"\nBuilding image: {image_name}")
+    print(f"Build context: {project_root}")
 
     # Build the image
     image, build_logs = docker_client.images.build(
-        path="/home/user/securecaddy-rl",
+        path=str(project_root),
         tag=image_name,
         rm=True,
         forcerm=True
@@ -65,10 +74,13 @@ def container(docker_client, build_image, image_name):
 
 
 @pytest.fixture
-def running_container(docker_client, build_image, image_name):
+def running_container(docker_client, build_image, image_name, project_root):
     """Create, start, and provide a running container for testing."""
     container = None
     try:
+        # Get path to test Caddyfile
+        caddyfile_path = project_root / "tests" / "fixtures" / "Caddyfile.test"
+
         # Create container with a test Caddyfile
         container = docker_client.containers.run(
             image_name,
@@ -76,7 +88,7 @@ def running_container(docker_client, build_image, image_name):
             ports={'80/tcp': None},  # Random port
             command=["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"],
             volumes={
-                '/home/user/securecaddy-rl/tests/fixtures/Caddyfile.test': {
+                str(caddyfile_path): {
                     'bind': '/etc/caddy/Caddyfile',
                     'mode': 'ro'
                 }
@@ -101,17 +113,20 @@ def running_container(docker_client, build_image, image_name):
 
 
 @pytest.fixture
-def ratelimit_container(docker_client, build_image, image_name):
+def ratelimit_container(docker_client, build_image, image_name, project_root):
     """Create a container with rate limiting configuration for testing."""
     container = None
     try:
+        # Get path to ratelimit Caddyfile
+        caddyfile_path = project_root / "tests" / "fixtures" / "Caddyfile.ratelimit"
+
         container = docker_client.containers.run(
             image_name,
             detach=True,
             ports={'80/tcp': None},  # Random port
             command=["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"],
             volumes={
-                '/home/user/securecaddy-rl/tests/fixtures/Caddyfile.ratelimit': {
+                str(caddyfile_path): {
                     'bind': '/etc/caddy/Caddyfile',
                     'mode': 'ro'
                 }

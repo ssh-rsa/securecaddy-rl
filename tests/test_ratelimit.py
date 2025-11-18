@@ -93,11 +93,14 @@ class TestRateLimiting:
         response = requests.get(f"http://localhost:{host_port}", timeout=5)
         assert response.status_code == 200
 
-    def test_different_ips_tracked_separately(self, docker_client, build_image, image_name):
+    def test_different_ips_tracked_separately(self, docker_client, build_image, image_name, project_root):
         """Test that different IPs are tracked separately for rate limiting."""
         # This test would require running containers with different source IPs
         # which is complex in a local Docker environment.
         # We'll create two separate containers to simulate this
+
+        # Get path to ratelimit Caddyfile
+        caddyfile_path = project_root / "tests" / "fixtures" / "Caddyfile.ratelimit"
 
         containers = []
         try:
@@ -108,7 +111,7 @@ class TestRateLimiting:
                     ports={'80/tcp': None},
                     command=["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"],
                     volumes={
-                        '/home/user/securecaddy-rl/tests/fixtures/Caddyfile.ratelimit': {
+                        str(caddyfile_path): {
                             'bind': '/etc/caddy/Caddyfile',
                             'mode': 'ro'
                         }
@@ -157,10 +160,11 @@ class TestRateLimiting:
         if response.status_code == 429:
             assert response.status_code == 429
 
-    def test_rate_limit_config_syntax_valid(self):
+    def test_rate_limit_config_syntax_valid(self, project_root):
         """Test that the example Caddyfile has valid rate limit syntax."""
         # Read the example Caddyfile
-        with open('/home/user/securecaddy-rl/Caddyfile.example', 'r') as f:
+        caddyfile_example = project_root / "Caddyfile.example"
+        with open(caddyfile_example, 'r') as f:
             content = f.read()
 
         # Check for required rate_limit directives
