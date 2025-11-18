@@ -1,0 +1,16 @@
+{
+    order rate_limit before basicauth
+}
+
+:80 {
+    # Strict rate limiting for testing: 10 requests per minute per IP
+    rate_limit {
+        zone test_zone {
+            key {remote_host}
+            events 10
+            window 1m
+        }
+    }
+
+    respond "Rate limited endpoint"
+}

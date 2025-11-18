@@ -1,0 +1,6 @@
+# Testing dependencies for securecaddy-rl
+pytest>=7.4.0
+docker>=6.1.0
+requests>=2.31.0
+pytest-timeout>=2.1.0
+pytest-xdist>=3.3.0
