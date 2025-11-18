@@ -16,7 +16,74 @@ git clone https://github.com/ssh-rsa/securecaddy-rl && cd securecaddy-rl
 ```
 and then build with `docker build`!
 
+```sh
+docker build -t securecaddy-rl:latest .
+```
 
-### More to come in this file.
+## Testing
+
+This project includes comprehensive tests for build verification, runtime behavior, and rate limiting functionality.
+
+### Running Tests Locally
+
+1. Install test dependencies:
+```sh
+pip install -r requirements-test.txt
+```
+
+2. Run all tests:
+```sh
+pytest -v
+```
+
+3. Run specific test categories:
+```sh
+# Build tests only
+pytest tests/test_build.py -v
+
+# Runtime tests only
+pytest tests/test_runtime.py -v
+
+# Rate limiting tests only
+pytest tests/test_ratelimit.py -v
+
+# Skip slow tests
+pytest -m "not slow" -v
+```
+
+### Test Coverage
+
+The test suite covers:
+- **Build Verification**: Ensures the Docker image builds correctly with all required components
+- **Runtime Behavior**: Validates container startup, HTTP responses, and process management
+- **Rate Limiting**: Tests the core rate limiting functionality with various scenarios
+
+### CI/CD
+
+Tests run automatically on:
+- Push to `main` branch
+- Pull requests
+- Manual workflow dispatch
+
+## Usage
+
+### With Docker Compose
+
+```sh
+docker-compose up -d
+```
+
+### With Docker
+
+```sh
+docker run -d \
+  -p 80:80 -p 443:443 \
+  -v $(pwd)/Caddyfile:/etc/caddy/Caddyfile \
+  -v caddy_data:/data \
+  -v caddy_config:/config \
+  ghcr.io/ssh-rsa/securecaddy-rl:latest
+```
+
+See `Caddyfile.example` for rate limiting configuration examples.
 
 

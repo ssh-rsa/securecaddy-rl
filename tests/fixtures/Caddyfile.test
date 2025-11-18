@@ -1,0 +1,4 @@
+# Test Caddyfile for basic runtime tests
+:80 {
+    respond "Hello from Caddy!"
+}
